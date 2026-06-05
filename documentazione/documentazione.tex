@@ -1,0 +1,67 @@
+\documentclass{article}
+\usepackage[italian]{babel}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage[a4paper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+\usepackage{amsmath}
+\usepackage{esdiff}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\setlength{\parskip}{\baselineskip}%
+\setlength{\parindent}{0pt}%
+\newcommand{\bigslant}[2]{{\raisebox{.1em}{$#1$}\left/\raisebox{-.2em}{$#2$}\right.}}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+
+\title{Documentazione Progetto InfoLab}
+\author{Giovanni Menicucci}
+\date{June 2026}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduzione}
+Questo documento tiene traccia dello sviluppo del progetto finale per il corso di Informatica con Laboratorio 2025/26, riguardante la soluzione dell'equazione del calore 2D. 
+
+\section{Discretizzazione del dominio}
+Input: numero naturale $N$.
+Il dominio $[0,1]^2$ è discretizzato con una griglia equispaziata di $(N+2) \times (N+2)$ punti.
+
+Output: grafo di adiacenza, che collega i punti primi vicini nella griglia.
+
+Implementazione: codice C++ che genera un file $\texttt{coords.txt}$ che rappresenta la griglia e un file $\texttt{connectivity.txt}$ che rappresenta il grafo.
+
+\section{Riordinamento dei nodi}
+Input: grafo definito sopra.
+
+Output: nodi del grafo riordinati.
+
+Implementazione: codice C++ che prende i file $\texttt{coords.txt}$ e $\texttt{connectivity.txt}$, e genera un file $\texttt{ordering.txt}$ che rappresenta la permutazione dei nodi.
+
+\section{Discretizzazione dell'equazione differenziale}
+Input: dominio dell'equazione differenziale discretizzato (ordinato nei due modi), coefficienti, funzione sorgente, condizione al bordo.
+
+Output: matrice e termine noto del sistema lineare che rappresenta l'equazione.
+
+Implementazione: codice C++ che genera un file $\texttt{A.txt}$ che rappresenta la matrice del sistema lineare, e un file $\texttt{rhs.txt}$ che rappresenta il termine noto.
+
+\section{Fattorizzazione di Cholesky}
+Input: matrice $A$ del sistema lineare.
+
+Output: matrice $L$ che fattorizza $A$.
+
+Implementazione: notebook $\texttt{.ipynb}$ che legge $\texttt{A.txt}$ ed esegue la fattorizzazione.
+
+\section{Soluzione del sistema lineare}
+Input: fattorizzazione di $A$ e termine noto del sistema lineare.
+
+Output: soluzione del sistema lineare.
+Analisi del tempo necessario al variare di $N$ e dell'ordinamento dei nodi.
+Struttura della matrice (entrate non nulle).
+Plot della soluzione.
+
+Implementazione: notebook $\texttt{.ipynb}$ che legge la matrice $L$ e $\texttt{rhs.txt}$ e risolve il sistema lineare.
+
+
+\end{document}
