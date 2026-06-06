@@ -24,41 +24,69 @@
 \section{Introduzione}
 Questo documento tiene traccia dello sviluppo del progetto finale per il corso di Informatica con Laboratorio 2025/26, riguardante la soluzione dell'equazione del calore 2D. 
 
+\section{Struttura del progetto}
+I task richiesti nel progetto vengono eseguiti con codici C++ (reperibili nella cartella "codice\_cpp" o Python (nella cartella "codice\_python").
+Alcuni codici producono file di testo (nella cartella "dati), che poi vengono letti dai codici successivi.
+
+Le sezioni seguenti contengono i moduli principali che compongono il progetto.
+
 \section{Discretizzazione del dominio}
 Input: numero naturale $N$.
 Il dominio $[0,1]^2$ è discretizzato con una griglia equispaziata di $(N+2) \times (N+2)$ punti.
 
-Output: grafo di adiacenza, che collega i punti primi vicini nella griglia.
+Output: grafo di adiacenza, i cui nodi sono i punti interni alla griglia, con archi tra nodi primi vicini nella griglia.
 
-Implementazione: codice C++ che genera un file $\texttt{coords.txt}$ che rappresenta la griglia e un file $\texttt{connectivity.txt}$ che rappresenta il grafo.
+File coinvolti: codice $\texttt{discretizzazione.cpp}$ che genera un file $\texttt{coords.txt}$ che rappresenta la griglia e un file $\texttt{connectivity.txt}$ che rappresenta il grafo.
+
+Strutture dati necessarie: $\texttt{struct}$ per i nodi, per memorizzare indice progressivo $n$, indici della griglia $i,j$, coordinate spaziali $x,y$.
+$\texttt{vector}$ per contenere la sequenza dei nodi interni, ordinati secondo l'indice $n$, per poi esportarli su $\texttt{coords.txt}$.
+$\texttt{vector}$ di $\texttt{vector}$ per la lista di adiacenza del grafo (lista e non matrice perché il grafo è sparso); e anche per costruire una matrice $\texttt{griglia}$ che associ alle coordinate spaziali di ciascun nodo interno il relativo indice progressivo, e associ -1 ai nodi di bordo.
+
+Funzioni:
+\begin{itemize}
+\item Generazione dei nodi con un doppio ciclo for che assegna indice progressivo (ordine lessicografico), coordinate nella griglia e spaziali.
+Questa funzione dovrebbe generare i singoli nodi, e riempire il vettore dei nodi interni e la matrice che associa alle coordinate l'indice progressivo.
+Complessità: $O(N^2)$, a causa del doppio ciclo for.
+All'interno di ogni iterazione si fanno solo operazioni elementari.
+
+\item Esportazione su file $\texttt{coords.txt}$.
+Questa funzione dovrebbe creare il file, scorrere sul vettore dei nodi interni e scriverli sul file, usando una riga per ciascun nodo, contenente $n,i,j,,x,y$.
+Complessità: $O(N^2)$ (lunghezza del vettore su cui scorro).
+
+\item Generazione lista di adiacenza del grafo ed esportazione su file $\texttt{connectivity.txt}$.
+Dovrebbe generare un vector di $N$ vector, ciascuno dei quali contiene i nodi collegati al nodo relativo; e creare il file txt.
+Uso un doppio ciclo for, sugli indici dei nodi interni.
+Uso la matrice $\texttt{griglia}$ per verificare se i 4 vicini di un nodo sono di bordo o no, nel qual caso aggiungo alla lista di adiacenza e scrivo sul file l'indice progressivo dell'arco (cioè quanti archi ho creato fino a questo) e gli indici progressivi dei due nodi coinvolti.
+
+\end{itemize}
 
 \section{Riordinamento dei nodi}
 Input: grafo definito sopra.
 
 Output: nodi del grafo riordinati.
 
-Implementazione: codice C++ che prende i file $\texttt{coords.txt}$ e $\texttt{connectivity.txt}$, e genera un file $\texttt{ordering.txt}$ che rappresenta la permutazione dei nodi.
+Implementazione: codice $\texttt{riordinamento.cpp}$ che prende i file $\texttt{coords.txt}$ e $\texttt{connectivity.txt}$ generati nel modulo precedente, e genera un file $\texttt{ordering.txt}$ che rappresenta la permutazione dei nodi.
 
-\section{Discretizzazione dell'equazione differenziale}
+\section{Approssimazione dell'equazione differenziale con sistema lineare}
 Input: dominio dell'equazione differenziale discretizzato (ordinato nei due modi), coefficienti, funzione sorgente, condizione al bordo.
 
 Output: matrice e termine noto del sistema lineare che rappresenta l'equazione.
 
-Implementazione: codice C++ che genera un file $\texttt{A.txt}$ che rappresenta la matrice del sistema lineare, e un file $\texttt{rhs.txt}$ che rappresenta il termine noto.
+Implementazione: codice $\texttt{approx\_lineare.cpp}$ che prende i file $\texttt{coords.txt}$ (generato nel modulo "discretizzazione") e $\texttt{ordering.txt}$ (generato nel modulo "riordinamento") e  genera un file $\texttt{A.txt}$ che rappresenta la matrice del sistema lineare, e un file $\texttt{rhs.txt}$ che rappresenta il termine noto.
 
 \section{Fattorizzazione di Cholesky}
 Input: matrice $A$ del sistema lineare.
 
-Output: matrice $L$ che fattorizza $A$.
+Output: matrice $L$ che fattorizza $A$. Immagini della struttura di $A,L$ (entrate non nulle).
 
-Implementazione: notebook $\texttt{.ipynb}$ che legge $\texttt{A.txt}$ ed esegue la fattorizzazione.
+Implementazione: notebook $\texttt{.ipynb}$ che legge $\texttt{A.txt}$ generato nel modulo precedente ed esegue la fattorizzazione.
+Struttura della matrice (entrate non nulle).
 
 \section{Soluzione del sistema lineare}
 Input: fattorizzazione di $A$ e termine noto del sistema lineare.
 
 Output: soluzione del sistema lineare.
 Analisi del tempo necessario al variare di $N$ e dell'ordinamento dei nodi.
-Struttura della matrice (entrate non nulle).
 Plot della soluzione.
 
 Implementazione: notebook $\texttt{.ipynb}$ che legge la matrice $L$ e $\texttt{rhs.txt}$ e risolve il sistema lineare.
