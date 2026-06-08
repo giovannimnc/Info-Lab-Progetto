@@ -27,6 +27,7 @@ Questo documento tiene traccia dello sviluppo del progetto finale per il corso d
 \section{Struttura del progetto}
 I task richiesti nel progetto vengono eseguiti con codici C++ (reperibili nella cartella "codice\_cpp" o Python (nella cartella "codice\_python").
 Alcuni codici producono file di testo (nella cartella "dati"), che poi vengono letti dai codici successivi.
+Tutti i task sono ripetuti per $N = 32, 64,128,256,512,1024$ (e anche per $N = 4$ che è verificabile a mano).  
 
 Le sezioni seguenti contengono i moduli principali che compongono il progetto.
 
@@ -47,13 +48,15 @@ Strutture dati necessarie:
 
 Funzioni:
 \begin{itemize}
-\item $\texttt{GeneraGriglia}$: calcola il passo della griglia e genera i singoli nodi interni con un doppio ciclo for che assegna indice progressivo $n$ (ordine lessicografico), coordinate nella griglia e spaziali.
+\item $\texttt{GeneraGriglia}$.
+Calcola il passo della griglia e genera i singoli nodi interni con un doppio ciclo for che assegna indice progressivo $n$ (ordine lessicografico), coordinate nella griglia e spaziali.
 Riempie il vettore dei nodi interni e la matrice $\texttt{griglia}$, aumentando $n$ di 1 alla fine di ogni iterazione.
 La matrice è inizializzata nel $\texttt{main}$ con valori $-1$.
 Complessità: $O(N^2)$, a causa del doppio ciclo for.
 All'interno di ogni iterazione si fanno solo operazioni elementari.
 
-\item $\texttt{EsportaPuntiInterni}$: crea il file $\texttt{coordsN.txt}$, scorre sul vettore dei nodi interni e li scrive sul file, usando una riga per ciascun nodo, contenente $n,i,j,x,y$.
+\item $\texttt{EsportaPuntiInterni}$.
+Crea il file $\texttt{coordsN.txt}$, scorre sul vettore dei nodi interni e li scrive sul file, usando una riga per ciascun nodo, contenente $n,i,j,x,y$.
 Complessità: $O(N^2)$ (lunghezza del vettore su cui scorro).
 
 \item $\texttt{GeneraEsportaGrafo}$.
@@ -74,7 +77,7 @@ Input: grafo definito sopra.
 
 Output: nodi del grafo riordinati.
 
-File coinvolti: codice $\texttt{riordinamento.cpp}$ che prende i file $\texttt{coords.txt}$ e $\texttt{connectivity.txt}$ generati nel modulo precedente, e genera un file $\texttt{ordering.txt}$ che rappresenta la permutazione dei nodi.
+File coinvolti: codice $\texttt{riordinamento.cpp}$ che prende il file $\texttt{coords.txt}$ generato nel modulo precedente, e genera un file $\texttt{ordering.txt}$ che rappresenta la permutazione dei nodi.
 
 Strutture dati necessarie:
 \begin{itemize}
@@ -84,19 +87,25 @@ Strutture dati necessarie:
 
 Funzioni:
 \begin{itemize}
-\item Generazione vettore dei nodi: dovrebbe leggere il file $\texttt{coords.txt}$ e riempire un vettore con i nodi.
+\item $\texttt{GeneraVettoreNodi}$. Prende in input $N$ e un vettore vuoto definito nel main.
+Scorre sul file $\texttt{coordsN.txt}$ e legge gli indici $n,i,j,x,y$ dei nodi, riempiendo il vettore con i nodi.
 In pratica inverte quanto fatto nella funzione $\texttt{EsportaPuntiInterni}$ del modulo di discretizzazione.
-Complessità attesa: $O(N^2)$.
+Complessità attesa: $O(N^2)$ che è il numero di nodi.
 
-\item Riordinamento dei nodi: dovrebbe prendere il vettore dei nodi e applicare la nested dissection, riempiendo un nuovo vettore con i nodi nell'ordine finale.
-Per farlo uso la ricorsione.
-Scorro sul vettore dei nodi, assegnandoli ai tre insiemi $V_1, V_2, V_S$ (vector) definiti nel testo, e poi applico la funzione a $V_1$ e $V_2$.
-Tra gli argomenti della funzione dovranno esserci anche gli indici $i,j$ dei nodi contenuti nel vettore, per decidere se dividere verticalmente o orizzontalmente in base a quale lato del rettangolo è maggiore.
-Il caso base della ricorsione sarà quando il rettangolo non è divisibile ulteriormente nei tre sottoinsiemi.
-Infine dovrò concatenare i vettori $V_1, V_2, V_S$, la loro unione sarà l'ordinamento finale dei nodi e sarà l'output della funzione.
-Complessità attesa: $O(N^2 \log N )$, perché ad ogni passo della ricorsione devo scorrere sul vettore dei nodi corrente, che ha lunghezza $O(N^2)$, e ad ogni passo della ricorsione divido per 2 (circa) il lato del rettangolo considerato, da cui il $\log N$.
+\item $\texttt{GeneraNuovoOrdinamento}$.
+Prende in input il vettore dei nodi riempito dalla funzione precedente, un vettore vuoto che conterrà i nodi riordinati, e gli indici $i,j$ massimo e minimo dei nodi contenuti nel rettangolo da riordinare (quando la chiamo dal main, sarà $i_{min} = j_{min} = 1$, $i_{max} = j_{max} = N$, cioè tutta la griglia dei nodi interni).
+Calcola le dimensioni $N_1, N_2$ del rettangolo da dividere in tre.
+Il caso base della ricorsione è quando il rettangolo non è divisibile ulteriormente, cioè contiene un solo nodo (oppure non è nemmeno definito perché $i_{min} >i_{max}$, può succedere).
+Se si supera il caso base, si divide il rettangolo verticalmente o orizzontalmente, in base a quale lato del rettangolo è maggiore.
+Si prende la riga o colonna di mezzo come separatore e si scorre sul vettore dei nodi, assegnandoli ai tre vettori $V_1, V_2, V_S$ definiti nel testo.
+Poi applica la funzione a $V_1$ e $V_2$ (passo ricorsivo), facendo attenzione agli indici che li delimitano.
+Infine aggiunge il vettore $V_S$ in fondo al vettore dei nodi riordinati; gli altri nodi (che non fossero nei casi base) sono stati aggiunti da questa stessa riga di codice durante la ricorsione.
 
-\item Esportazione su file: dovrebbe creare il file $\texttt{ordering.txt}$ e scorrere sul vettore generato dalla funzione sopra, con i nodi nell'ordine finale, scrivendo per ciascun nodo in una riga la posizione $m$ nel vettore e l'indice progressivo iniziale $n$ contenuto nella struct.
+Complessità attesa: $O(N^2 \log N )$, perché ad ogni passo della ricorsione devo scorrere sul vettore dei nodi corrente, che ha lunghezza $O(N^2)$, e ad ogni passo della ricorsione divido per 2 (circa) il lato del rettangolo considerato, quindi il numero di passi è $O(\log N)$.
+
+\item $\texttt{EsportaOrdinamento}$.
+Crea il file $\texttt{ordering.txt}$ e scorre sul vettore dei nodi riordinati, generato dalla funzione sopra.
+Per ciascun nodo, scrive in una riga del file la posizione $m$ nel nuovo ordine e l'indice progressivo iniziale $n$ contenuto nella struct.
 Complessità attesa: $O(N^2)$, che è la lunghezza del vettore.
 \end{itemize}
 
