@@ -1,20 +1,19 @@
 #include <iostream>
 #include <vector>
-#include <algorithm>
 #include <fstream>
 #include <string>
 
 using namespace std;
 
 struct nodo {
-    int n;              // indice progressivo
+    size_t n;              // indice progressivo
     int i,j;            // indici sulla griglia
     double x,y;         // coordinate spaziali
 };
 
 void GeneraGriglia(const int N, vector<nodo>& nodi, vector<vector<int>>& griglia) {
     const double h = 1.0 / (N+1);       // passo della griglia
-    int ind_progr = 0;                  // indice n che numera i nodi
+    size_t ind_progr = 0;                  // indice n che numera i nodi
 
     for (int i = 1; i<=N; i++) {        // ciclo solo sui nodi interni
         for (int j = 1; j<=N; j++) {
@@ -35,7 +34,7 @@ void GeneraGriglia(const int N, vector<nodo>& nodi, vector<vector<int>>& griglia
 };
 
 void EsportaPuntiInterni(const int N, const vector<nodo>& nodi) {
-    string nome_file = "../dati/coords" + to_string(N) + ".txt";    // "../dati" torna indietro alla cartella radice
+    const string nome_file = "../dati/coords" + to_string(N) + ".txt";    // "../dati" torna indietro alla cartella radice
     ofstream file_out(nome_file);
 
     for (const auto& m : nodi) {
@@ -47,16 +46,16 @@ void EsportaPuntiInterni(const int N, const vector<nodo>& nodi) {
 };
 
 void GeneraEsportaGrafo(const int N, const vector<vector<int>>& griglia, vector<vector<int>>& lista_adiacenza) {
-    string nome_file = "../dati/connectivity" + to_string(N) + ".txt";    
+    const string nome_file = "../dati/connectivity" + to_string(N) + ".txt";    
     ofstream file_out(nome_file);
 
-    int e = 0;      // indice progressivo che numera gli archi
+    size_t e = 0;      // indice progressivo che numera gli archi
 
     for (int i = 1; i<=N; i++) {
         for (int j = 1; j<=N; j++) {
-            auto a = griglia[i][j];
-            auto b = griglia[i+1][j];   // vicino a destra
-            auto c = griglia[i][j+1];   // vicino in alto
+            const auto a = griglia[i][j];
+            const auto b = griglia[i+1][j];   // vicino a destra
+            const auto c = griglia[i][j+1];   // vicino in alto
 
             if (b != -1) {          // se il nodo (i+1,j) non è di bordo, aggiungo alla lista di adiacenza e scrivo l'arco su file
                 lista_adiacenza[a].push_back(b);
@@ -82,7 +81,7 @@ void GeneraEsportaGrafo(const int N, const vector<vector<int>>& griglia, vector<
 
 
 int main() {
-    const int N = 1024;
+    const int N = 32;
 
     vector<nodo> nodi;
     vector<vector<int>> griglia(N + 2, vector<int>(N + 2, -1));
