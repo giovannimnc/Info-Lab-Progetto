@@ -72,6 +72,7 @@ Complessità: $O(N^2)$, a causa del doppio ciclo for.
 
 Complessità totale: $O(N^2)$.
 
+
 \section{Riordinamento dei nodi}
 Input: grafo definito sopra.
 
@@ -90,7 +91,7 @@ Funzioni:
 \item $\texttt{GeneraVettoreNodi}$. Prende in input $N$ e un vettore vuoto definito nel main.
 Scorre sul file $\texttt{coordsN.txt}$ e legge gli indici $n,i,j,x,y$ dei nodi, riempiendo il vettore con i nodi.
 In pratica inverte quanto fatto nella funzione $\texttt{EsportaPuntiInterni}$ del modulo di discretizzazione.
-Complessità attesa: $O(N^2)$ che è il numero di nodi.
+Complessità: $O(N^2)$ che è il numero di nodi.
 
 \item $\texttt{GeneraNuovoOrdinamento}$.
 Prende in input il vettore dei nodi riempito dalla funzione precedente, un vettore vuoto che conterrà i nodi riordinati, e gli indici $i,j$ massimo e minimo dei nodi contenuti nel rettangolo da riordinare (quando la chiamo dal main, sarà $i_{min} = j_{min} = 1$, $i_{max} = j_{max} = N$, cioè tutta la griglia dei nodi interni).
@@ -101,19 +102,15 @@ Si prende la riga o colonna di mezzo come separatore e si scorre sul vettore dei
 Poi applica la funzione a $V_1$ e $V_2$ (passo ricorsivo), facendo attenzione agli indici che li delimitano.
 Infine aggiunge il vettore $V_S$ in fondo al vettore dei nodi riordinati; gli altri nodi (che non fossero nei casi base) sono stati aggiunti da questa stessa riga di codice durante la ricorsione.
 
-Complessità attesa: $O(N^2 \log N )$, perché ad ogni passo della ricorsione devo scorrere sul vettore dei nodi corrente, che ha lunghezza $O(N^2)$, e ad ogni passo della ricorsione divido per 2 (circa) il lato del rettangolo considerato, quindi il numero di passi è $O(\log N)$.
+Complessità: $O(N^2 \log N )$, perché ad ogni passo della ricorsione devo scorrere sul vettore dei nodi corrente, che ha lunghezza $O(N^2)$, e ad ogni passo della ricorsione divido per 2 (circa) il lato del rettangolo considerato, quindi il numero di passi è $O(\log N)$.
 
 \item $\texttt{EsportaOrdinamento}$.
 Crea il file $\texttt{ordering.txt}$ e scorre sul vettore dei nodi riordinati, generato dalla funzione sopra.
 Per ciascun nodo, scrive in una riga del file la posizione $m$ nel nuovo ordine e l'indice progressivo iniziale $n$ contenuto nella struct.
-Complessità attesa: $O(N^2)$, che è la lunghezza del vettore.
+Complessità: $O(N^2)$, che è la lunghezza del vettore.
 \end{itemize}
 
-Complessità totale attesa: $O(N^2 \log N)$.
-
-
-
-
+Complessità totale: $O(N^2 \log N)$.
 
 
 \section{Approssimazione dell'equazione differenziale con sistema lineare}
@@ -121,7 +118,47 @@ Input: dominio dell'equazione differenziale discretizzato (ordinato nei due modi
 
 Output: matrice e termine noto del sistema lineare che rappresenta l'equazione.
 
-Implementazione: codice $\texttt{approx\_lineare.cpp}$ che prende i file $\texttt{coords.txt}$ (generato nel modulo "discretizzazione") e $\texttt{ordering.txt}$ (generato nel modulo "riordinamento") e  genera un file $\texttt{A.txt}$ che rappresenta la matrice del sistema lineare, e un file $\texttt{rhs.txt}$ che rappresenta il termine noto.
+File coinvolti: codice $\texttt{approx\_lineare.cpp}$ che prende i file $\texttt{coords.txt}$ (generato nel modulo "discretizzazione") e $\texttt{ordering.txt}$ (generato nel modulo "riordinamento") e  genera un file $\texttt{A.txt}$ che rappresenta la matrice del sistema lineare, e un file $\texttt{rhs.txt}$ che rappresenta il termine noto.
+
+Strutture dati necessarie: 
+\begin{itemize}
+\item $\texttt{vector}$ per matrici e vettori.
+\end{itemize}
+
+Funzioni:
+\begin{itemize}
+\item Generazione mappa da $(i,j)$ a $n$ (ordine naturale), e sua inversa.
+Deve leggere il file $\texttt{coords.txt}$ e generare una matrice $(N+2)\times (N+2)$ che associ a ogni valore di $(i,j)$ interno il valore $n$. Deve inoltre generare un vettore che faccia l'inverso, cioè associ $(i,j)$ a $n$ (solo per i punti interni).
+La matrice deve infine associare agli $(i,j)$ di bordo un valore tra $0$ e $4N+4$, per poter calcolare il valore della condizione al bordo in quel punto.
+In realtà gli associo un valore negativo, per poter distinguere facilmente tra punti di bordo e non.
+
+Complessità: $O(N^2)$.
+
+\item Generazione mappa da $(i,j)$ a $m$ (riordinamento), e sua inversa.
+Deve leggere il file $\texttt{ordering.txt}$ e fare l'analogo della funzione precedente, usando la matrice definita sopra per passare da $(i,j)$ a $m$ attraverso $n$.
+Complessità: $O(N^2)$.
+
+\item Generazione dei coefficienti non nulli della matrice $A$ del sistema ($N^2 \times N^2)$, generazione del termine noto, ed esportazione.
+Scelto un ordinamento, prende in input la matrice e il vettore generati dalle funzioni sopra.
+Inoltre prende in input un vettore di $4N+4$ componenti che contiene le condizioni al bordo $u_0(x,y)$.
+Crea un file $\texttt{A.txt}$ e un file $\texttt{rhs.txt}$ (ne servirà uno per ogni $N$ e per i due ordinamenti).
+
+Scorre sugli indici di riga $l$ di $A$, cioè sulle $N^2$ righe del sistema lineare.
+Usando una delle mappe definite sopra, associa a $l$ una coppia $(i,j)$.
+Calcola il valore $f(x_i,y_j)$ e lo salva in una variabile $b$, che sarà il coefficiente $l$ del termine noto.
+Dall'equazione scritta nel testo si vede che solo 5 coefficienti ($(i+1,j)$ etc) sono coinvolti nella riga $(i,j)$ del sistema.
+Usando una delle mappe definite sopra, associa a quelli che non sono di bordo (cioè hanno immagine diversa da -1 tramite la mappa; sono almeno 3 e al massimo 5) un indice $k$.
+Calcola il valore di $A_{l,k}$ e scrive sul file $\texttt{A.txt}$ la riga $l,k,A_{l,k}$.
+Il formato è COO, cioè sto salvando indici e valore solo dei coefficienti non nulli.
+
+Per gli eventuali indici di bordo, prende il valore $u_0(x,y)$ assegnato e lo somma alla variabile $b$ (con opportuno segno e coefficiente).
+Infine scrive sul file il valore di $b$.
+
+Complessità: $O(N^2)$, perché il ciclo su $l$ fa $N^2$ iterazioni, e ogni iterazione contiene poche operazioni elementari.
+
+
+
+\end{itemize}
 
 \section{Fattorizzazione di Cholesky}
 Input: matrice $A$ del sistema lineare.
