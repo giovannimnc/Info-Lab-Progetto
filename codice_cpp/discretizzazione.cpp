@@ -31,7 +31,7 @@ void GeneraGriglia(const int N, vector<nodo>& nodi, vector<vector<int>>& griglia
 
         }
     }
-};
+}
 
 void EsportaPuntiInterni(const int N, const vector<nodo>& nodi) {
     const string nome_file = "../dati/coords" + to_string(N) + ".txt";    // "../dati" torna indietro alla cartella radice
@@ -39,11 +39,10 @@ void EsportaPuntiInterni(const int N, const vector<nodo>& nodi) {
 
     for (const auto& m : nodi) {
         file_out << m.n << " " << m.i << " " << m.j << " " << m.x << " " << m.y << "\n";
-
     }
 
     file_out.close();
-};
+}
 
 void GeneraEsportaGrafo(const int N, const vector<vector<int>>& griglia, vector<vector<int>>& lista_adiacenza) {
     const string nome_file = "../dati/connectivity" + to_string(N) + ".txt";    
@@ -76,22 +75,23 @@ void GeneraEsportaGrafo(const int N, const vector<vector<int>>& griglia, vector<
     }
 
     file_out.close();
-};
+}
 
 
 
 int main() {
-    const int N = 32;
+    const int N = 4;
 
     vector<nodo> nodi;
+    nodi.reserve(N * N);        // ottimizza il push_back
     vector<vector<int>> griglia(N + 2, vector<int>(N + 2, -1));
     vector<vector<int>> lista_adiacenza(N * N);
 
-    // GeneraGriglia(N, nodi, griglia);
-    // EsportaPuntiInterni(N, nodi);
-    // GeneraEsportaGrafo(N, griglia, lista_adiacenza);
+    GeneraGriglia(N, nodi, griglia);
+    EsportaPuntiInterni(N, nodi);
+    GeneraEsportaGrafo(N, griglia, lista_adiacenza);
 
-    cout <<"aa"<<endl;
+    cout <<"ok"<<endl;
 
     return 0;
 }
