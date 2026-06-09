@@ -2,3 +2,7 @@
 *.o
 
 .vscode/
+
+# file troppo pesanti
+A1024nat.txt
+A1024ord.txt

@@ -27,7 +27,7 @@ Questo documento tiene traccia dello sviluppo del progetto finale per il corso d
 \section{Struttura del progetto}
 I task richiesti nel progetto vengono eseguiti con codici C++ (reperibili nella cartella "codice\_cpp" o Python (nella cartella "codice\_python").
 Alcuni codici producono file di testo (nella cartella "dati"), che poi vengono letti dai codici successivi.
-Tutti i task sono ripetuti per $N = 32, 64,128,256,512,1024$ (e anche per $N = 4$ che è verificabile a mano).  
+Tutti i task sono ripetuti per $N = 32, 64,128,256,512,1024$ (e anche per $N = 4$ che è verificabile a mano), e se necessario per i due ordinamenti definiti nel testo.  
 
 Le sezioni seguenti contengono i moduli principali che compongono il progetto.
 
@@ -123,42 +123,66 @@ File coinvolti: codice $\texttt{approx\_lineare.cpp}$ che prende i file $\texttt
 Strutture dati necessarie: 
 \begin{itemize}
 \item $\texttt{vector}$ per matrici e vettori.
+\item $\texttt{pair}$ per coppie di indici.
 \end{itemize}
 
 Funzioni:
 \begin{itemize}
-\item Generazione mappa da $(i,j)$ a $n$ (ordine naturale), e sua inversa.
-Deve leggere il file $\texttt{coords.txt}$ e generare una matrice $(N+2)\times (N+2)$ che associ a ogni valore di $(i,j)$ interno il valore $n$. Deve inoltre generare un vettore che faccia l'inverso, cioè associ $(i,j)$ a $n$ (solo per i punti interni).
-La matrice deve infine associare agli $(i,j)$ di bordo un valore tra $0$ e $4N+4$, per poter calcolare il valore della condizione al bordo in quel punto.
-In realtà gli associo un valore negativo, per poter distinguere facilmente tra punti di bordo e non.
+\item $\texttt{GeneraIndiciBordo}$.
+Per accettare in input una condizione al bordo non identicamente nulla, assegno a ogni punto del bordo della griglia un indice progressivo tra $-1$ e $-4N-4$, cioè creo una funzione biunivoca $p(i,j)$ tra gli indici $(i,j)$ di bordo e gli interi $\{-1, \dots, -4N-4\}$.
+Lo faccio scorrendo in senso orario sul bordo, partendo dall'origine.
+Assegno ai punti del bordo indici negativi per poter distinguere facilmente punti di bordo e non.
+Se nella funzione successiva $\texttt{GeneraEsportaMatriceRhs}$ si vuole prendere in input una condizione al bordo, essa dovrà essere un vettore $v$ di $4N+4$ numeri reali, ordinati nel modo descritto sopra, in modo che $u_0(x_i,y_j) = v[-p(i,j) - 1]$.
 
-Complessità: $O(N^2)$.
+Complessità: $O(N)$, che è la lunghezza del bordo.
 
-\item Generazione mappa da $(i,j)$ a $m$ (riordinamento), e sua inversa.
-Deve leggere il file $\texttt{ordering.txt}$ e fare l'analogo della funzione precedente, usando la matrice definita sopra per passare da $(i,j)$ a $m$ attraverso $n$.
-Complessità: $O(N^2)$.
+\item $\texttt{GeneraMappaNaturale}$.
+Genera una mappa da $(i,j)$ a $n$ (ordine naturale), e la sua inversa.
+Legge il file $\texttt{coords.txt}$ e scrive su una matrice $(N+2)\times (N+2)$ (la stessa usata per i punti di bordo) l'indice progressivo $n$ associato a ogni valore di $(i,j)$ interno.
+Inoltre riempie un vettore che fa l'inverso, cioè associa la coppia $(i,j)$ a $n$ (solo per i punti interni).
+Infine chiama la funzione $\texttt{GeneraIndiciBordo}$ per associare i valori da $-1$ a $-4N-4$ ai punti di bordo.
 
-\item Generazione dei coefficienti non nulli della matrice $A$ del sistema ($N^2 \times N^2)$, generazione del termine noto, ed esportazione.
-Scelto un ordinamento, prende in input la matrice e il vettore generati dalle funzioni sopra.
-Inoltre prende in input un vettore di $4N+4$ componenti che contiene le condizioni al bordo $u_0(x,y)$.
-Crea un file $\texttt{A.txt}$ e un file $\texttt{rhs.txt}$ (ne servirà uno per ogni $N$ e per i due ordinamenti).
+Complessità: $O(N^2)$, il numero di elementi nella matrice..
+
+\item $\texttt{GeneraMappaOrdinata}$.
+Genera una mappa da $(i,j)$ a $m$ (riordinamento), e la sua inversa.
+Legge il file $\texttt{ordering.txt}$ e fa l'analogo della funzione precedente, usando la mappa definita sopra per passare da $(i,j)$ a $m$ attraverso $n$ (poiché il file txt contiene la coppia $m,n$).
+
+Complessità: $O(N^2)$, come sopra.
+
+\item \texttt{GeneraEsportaMatriceRhs}.
+Genera i coefficienti non nulli della matrice $A$ del sistema ($N^2 \times N^2)$, il termine noto, e li esporta.
+Prende in input:
+\begin{enumerate}
+\item $N$.
+\item Una stringa "nat" o "ord" che decide il tipo di ordinamento (per dare il nome giusto ai file).
+\item La matrice e il vettore generati dalle funzioni sopra (devono essere quelli relativi all'ordinamento scelto).
+\item La funzione che fa da sorgente di calore, definita nel main come funzione lambda.
+Per darla come parametro, serve includere $\texttt{functional}$.
+\item La diffusività $\kappa$, che di default è $0.01$.
+\item Un vettore di $4N+4$ componenti che contiene le condizioni al bordo $u_0(x,y)$.
+Di default la condizione di bordo dev'essere 0, ma non posso mettere come valore di default un vettore la cui lunghezza dipenda da $N$, che è un argomento della funzione.
+Perciò di default il vettore dei valori al bordo è vuoto, e in tal caso lo ridefinisco all'interno della funzione in modo che contenga solo zeri.
+\end{enumerate}
+
+La funzione crea un file $\texttt{A.txt}$ e un file $\texttt{rhs.txt}$ (ne servirà uno per ogni $N$ e per i due ordinamenti).
 
 Scorre sugli indici di riga $l$ di $A$, cioè sulle $N^2$ righe del sistema lineare.
 Usando una delle mappe definite sopra, associa a $l$ una coppia $(i,j)$.
 Calcola il valore $f(x_i,y_j)$ e lo salva in una variabile $b$, che sarà il coefficiente $l$ del termine noto.
 Dall'equazione scritta nel testo si vede che solo 5 coefficienti ($(i+1,j)$ etc) sono coinvolti nella riga $(i,j)$ del sistema.
-Usando una delle mappe definite sopra, associa a quelli che non sono di bordo (cioè hanno immagine diversa da -1 tramite la mappa; sono almeno 3 e al massimo 5) un indice $k$.
-Calcola il valore di $A_{l,k}$ e scrive sul file $\texttt{A.txt}$ la riga $l,k,A_{l,k}$.
+Usando una delle mappe definite sopra, associa a quelli che non sono di bordo (cioè hanno immagine non negativa tramite la mappa; sono almeno 3 e al massimo 5) un indice $m$.
+Calcola il valore di $A_{l,m}$ e scrive sul file $\texttt{A.txt}$ la riga $l,m,A_{l,m}$.
 Il formato è COO, cioè sto salvando indici e valore solo dei coefficienti non nulli.
 
-Per gli eventuali indici di bordo, prende il valore $u_0(x,y)$ assegnato e lo somma alla variabile $b$ (con opportuno segno e coefficiente).
-Infine scrive sul file il valore di $b$.
+Per gli eventuali indici di bordo, usa l'indice $m$ calcolato con la mappa per prendere il valore $u_0(x,y)$ assegnato, e lo somma alla variabile $b$ (con opportuno segno e coefficiente).
+Infine scrive sul file $\texttt{rhs.txt}$ il valore di $b$.
 
-Complessità: $O(N^2)$, perché il ciclo su $l$ fa $N^2$ iterazioni, e ogni iterazione contiene poche operazioni elementari.
-
-
+Complessità: $O(N^2)$, perché il ciclo su $l$ fa $N^2$ iterazioni, e ogni iterazione contiene poche operazioni che costano $O(1)$ (il calcolo della funzione $f(x,y)$ potrebbe essere pesante, ma non dipende da $N$).
 
 \end{itemize}
+
+Complessità totale: $O(N^2)$.
 
 \section{Fattorizzazione di Cholesky}
 Input: matrice $A$ del sistema lineare.
