@@ -187,10 +187,29 @@ Complessità totale: $O(N^2)$.
 \section{Fattorizzazione di Cholesky}
 Input: matrice $A$ del sistema lineare.
 
-Output: matrice $L$ che fattorizza $A$. Immagini della struttura di $A,L$ (entrate non nulle).
+Output: matrice $L$ tale che $A = -LL^T$. Immagini della struttura di $A,L$ (entrate non nulle).
 
-Implementazione: notebook $\texttt{.ipynb}$ che legge $\texttt{A.txt}$ generato nel modulo precedente ed esegue la fattorizzazione.
+File coinvolti: notebook $\texttt{soluzione\_sistema.ipynb}$ che legge $\texttt{A.txt}$ generato nel modulo precedente ed esegue la fattorizzazione.
 Struttura della matrice (entrate non nulle).
+
+Strutture dati:
+\begin{itemize}
+\item array di NumPy, per salvare $A$ in formato COO. 
+\end{itemize}
+
+Funzioni:
+\begin{itemize}
+\item Importazione della matrice $A$ e salvataggio in formato CSC.
+Legge $\texttt{A.txt}$ in formato COO, scarica le tre colonne come vettori, e converte in CSC (con $\texttt{scipy.sparse.csc\_matrix}$).
+
+\item Calcolo di $L$.
+Prende $A$ definita sopra e calcola $L$ con la funzione fornita nel testo. Misura il tempo necessario.
+
+\item Struttura di $A,L$.
+Calcola il numero di entrate non nulle in $A,L$ e le disegna usando $\texttt{plt.spy}$.
+
+
+\end{itemize}
 
 \section{Soluzione del sistema lineare}
 Input: fattorizzazione di $A$ e termine noto del sistema lineare.
@@ -199,7 +218,28 @@ Output: soluzione del sistema lineare.
 Analisi del tempo necessario al variare di $N$ e dell'ordinamento dei nodi.
 Plot della soluzione.
 
-Implementazione: notebook $\texttt{.ipynb}$ che legge la matrice $L$ e $\texttt{rhs.txt}$ e risolve il sistema lineare.
+File coinvolti: notebook $\texttt{soluzione\_sistema.ipynb}$ che legge il file $\texttt{rhs.txt}$ generato nel modulo "approssimazione".
 
+Strutture dati:
+\begin{itemize}
+\item array di NumPy per i vettori del termine noto e della soluzione, e per le matrici necessarie a passare da $n$ o $m$ a $(i,j)$.
+\end{itemize}
+
+Funzioni:
+\begin{itemize}
+\item Importazione del termine noto.
+Legge $\texttt{rhs.txt}$ e scarica il termine noto come array $b$. 
+
+\item Soluzione del sistema lineare.
+Risolve prima il sistema triangolare inferiore $Ly = -b$, poi quello triangolare superiore $L^T u= y$, con la funzione apposita di $\texttt{scipy}$.
+L'output è il vettore $u$.
+Misura il tempo necessario per risolvere il sistema.
+
+\item Conversione da ordine naturale ($n$) o riordinato ($m$) a coordinate $(i,j)$.
+Legge i file $\texttt{coords.txt}$ e $\texttt{ordering.txt}$ per assegnare i valori contenuti nel vettore $u$ ai punti $(i,j)$.
+Fa la stessa cosa della funzione $\texttt{GeneraMappaNaturale/Ordinata}$ del modulo "approssimazione lineare", ma solo in un verso.
+
+\item Grafico della soluzione. Prende il vettore soluzione $u$ in un certo ordinamento, e disegna la soluzione. 
+\end{itemize}
 
 \end{document}
