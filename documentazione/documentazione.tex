@@ -195,19 +195,19 @@ Struttura della matrice (entrate non nulle).
 Strutture dati:
 \begin{itemize}
 \item array di NumPy, per salvare $A$ in formato COO. 
+\item Formato CSC fornito da SciPy.
 \end{itemize}
 
 Funzioni:
 \begin{itemize}
-\item Importazione della matrice $A$ e salvataggio in formato CSC.
-Legge $\texttt{A.txt}$ in formato COO, scarica le tre colonne come vettori, e converte in CSC (con $\texttt{scipy.sparse.csc\_matrix}$).
+\item $\texttt{ImportaMatriceCSC}$.
+Prende in input $N$ e una stringa "ord" o "nat" per scegliere il file.
+Legge $\texttt{A.txt}$ in formato COO, scarica le tre colonne come array (con $\texttt{np.loadtxt}$), e converte in CSC (con $\texttt{scipy.sparse.csc\_matrix}$).
+Restituisce la matrice $A$ in CSC.
+Complessità: $O(N^2)$, che è il numero di entrate non nulle in $A$.
 
-\item Calcolo di $L$.
-Prende $A$ definita sopra e calcola $L$ con la funzione fornita nel testo. Misura il tempo necessario.
-
-\item Struttura di $A,L$.
-Calcola il numero di entrate non nulle in $A,L$ e le disegna usando $\texttt{plt.spy}$.
-
+\item $\texttt{CalcolaCholesky}$.
+Prende in input una matrice $A$ (definita negativa) e calcola $L$ (tale che $LL^T = -A)$ con la funzione fornita nel testo.
 
 \end{itemize}
 
@@ -227,19 +227,39 @@ Strutture dati:
 
 Funzioni:
 \begin{itemize}
-\item Importazione del termine noto.
-Legge $\texttt{rhs.txt}$ e scarica il termine noto come array $b$. 
+\item $\texttt{ImportaRhs}$.
+Legge $\texttt{rhs.txt}$ e scarica il termine noto come array $b$.
+Complessità: $O(N^2)$, che è il numero di coefficienti di $b$.
 
-\item Soluzione del sistema lineare.
-Risolve prima il sistema triangolare inferiore $Ly = -b$, poi quello triangolare superiore $L^T u= y$, con la funzione apposita di $\texttt{scipy}$.
-L'output è il vettore $u$.
-Misura il tempo necessario per risolvere il sistema.
+\item $\texttt{RisolviSistema}$.
+Prende in input $L$ triangolare inferiore, e $b$ array.
+Risolve prima il sistema triangolare inferiore $Ly = -b$, poi quello triangolare superiore $L^T u= y$, con la funzione $\texttt{scipy.sparse.linalg.spsolve\_triangular}$.
+L'output è il vettore $u$, nell'ordine scelto.
+Complessità: $O(nnz(L))$.
 
-\item Conversione da ordine naturale ($n$) o riordinato ($m$) a coordinate $(i,j)$.
-Legge i file $\texttt{coords.txt}$ e $\texttt{ordering.txt}$ per assegnare i valori contenuti nel vettore $u$ ai punti $(i,j)$.
-Fa la stessa cosa della funzione $\texttt{GeneraMappaNaturale/Ordinata}$ del modulo "approssimazione lineare", ma solo in un verso.
 
-\item Grafico della soluzione. Prende il vettore soluzione $u$ in un certo ordinamento, e disegna la soluzione. 
+\item $\texttt{GeneraMappaNaturale}$.
+Legge il file $\texttt{coords.txt}$ e genera un array che in posizione $n$ (indice progressivo naturale) contiene la coppia $(i,j)$ associata. Complessità: $O(N^2)$, la lunghezza dell'array.
+
+\item $\texttt{GeneraMappaOrdinata}$.
+Legge il file $\texttt{ordering.txt}$ e genera un array che in posizione $m$ (indice progressivo dopo il riordinamento) contiene la coppia $(i,j)$ associata.
+Per convertire da $m$ a $(i,j)$ passo attraverso $n$, usando la funzione precedente.
+Uso il modo nativo di NumPy per permutare gli elementi ("fancy indexing"): valuto l'array "mappa naturale" sull'intero array di conversione tra gli ordinamenti $m$ e $n$.
+Il risultato è l'array voluto che mappa $m$ in $(i,j)$.
+Complessità: $O(N^2)$, perché scaricare dal file, chiamare la funzione precedente e permutare i coefficienti richiedono tutti $O(N^2)$.
+
+Queste due funzioni sono analoghe alle funzioni $\texttt{GeneraMappaNaturale/Ordinata}$ del modulo "approssimazione lineare", ma operano solo in un verso (da $n$ o $m$ a $(i,j)$).
+
+\item \texttt{GeneraMappaBordo}.
+Genera un array di $4N+4$ elementi che in posizione $k$ contiene il $k+1$-esimo punto $(i,j)$ che si trova scorrendo in senso orario sul bordo del quadrato, partendo dall'origine.
+Per farlo uso gli array di NumPy, che sono più veloci dei cicli for di Python. Complessità: $O(N)$, che è la lunghezza del bordo.
+
+Questa funzione fa l'operazione inversa della funzione $\texttt{GeneraIndiciBordo}$ del modulo "approssimazione lineare", a meno del segno che lì era stato usato per distinguere tra punti di bordo e non.
+
+\item $\texttt{DisegnaSoluzione}$.
+Prende in input $N$, una stringa che specifica l'ordinamento, il vettore soluzione $u$ in quell'ordinamento e il vettore delle condizioni al bordo nel formato definito nel modulo "approssimazione lineare".
+Usa le funzioni definite sopra per trasformare dall'ordinamento scelto agli indici $(i,j)$, e disegna la soluzione.
+
 \end{itemize}
 
 \end{document}
