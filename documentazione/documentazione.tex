@@ -64,7 +64,7 @@ Crea il file $\texttt{connectivityN.txt}$.
 Svolge un doppio ciclo for, sugli indici dei nodi interni.
 Ad ogni iterazione, usa la matrice $\texttt{griglia}$ per verificare se i 2 vicini a destra e in alto del nodo corrente sono di bordo o no (se un nodo è di bordo, il valore assegnatogli nella matrice è rimasto -1, cioè non è stato sovrascritto con l'indice progressivo).
 Controlla solo i vicini a destra e in alto, perché se controllassi tutti e 4 conterei due volte gli archi.
-Se il vicino non è di bordo, aggiunge alla lista di adiacenza (vector di $N$ vector, inizializzato nel main) i due nodi coinvolti.
+Se il vicino non è di bordo, aggiunge alla lista di adiacenza (vector di $N^2$ vector, inizializzato nel main) i due nodi coinvolti.
 Poi scrive in una riga del file l'indice progressivo $e$ dell'arco (cioè quanti archi ho creato fino a questo) e gli indici progressivi dei due nodi.
 Complessità: $O(N^2)$, a causa del doppio ciclo for.
 
@@ -235,7 +235,7 @@ Complessità: $O(N^2)$, che è il numero di coefficienti di $b$.
 Prende in input $L$ triangolare inferiore, e $b$ array.
 Risolve prima il sistema triangolare inferiore $Ly = -b$, poi quello triangolare superiore $L^T u= y$, con la funzione $\texttt{scipy.sparse.linalg.spsolve\_triangular}$.
 L'output è il vettore $u$, nell'ordine scelto.
-Complessità: $O(nnz(L))$.
+Complessità: $O(nnz(L))$, perché i due sistemi sono triangolari. $nnz(L) = O(N^3)$ per l'ordinamento naturale, $O(N^2 \log N)$ per il riordinamento.
 
 
 \item $\texttt{GeneraMappaNaturale}$.
@@ -258,8 +258,36 @@ Questa funzione fa l'operazione inversa della funzione $\texttt{GeneraIndiciBord
 
 \item $\texttt{DisegnaSoluzione}$.
 Prende in input $N$, una stringa che specifica l'ordinamento, il vettore soluzione $u$ in quell'ordinamento e il vettore delle condizioni al bordo nel formato definito nel modulo "approssimazione lineare".
-Usa le funzioni definite sopra per trasformare dall'ordinamento scelto agli indici $(i,j)$, e disegna la soluzione.
+Usa le mappe definite sopra per trasformare dall'ordinamento scelto agli indici $(i,j)$, e disegna la soluzione.
 
 \end{itemize}
+
+\section{Analisi sperimentale}
+\subsection{Struttura delle matrici $A,L$}
+Nel notebook sono riportate le matrici $A,L$ nel caso $N=128$.
+
+Con l'ordinamento naturale, $A$ è a banda simmetrica; sembra una banda completamente piena, ma in realtà in ogni riga ci sono al massimo 5 coefficienti non nulli.
+Il fattore $L$ corrispondente è a sua volta a banda (inferiore), ma non è sparso, come si vedrà sotto.
+
+Dopo il riordinamento, $A$ ha una struttura ricorsiva, con blocchi vuoti tra gli indici di $V_1$ e $V_2$ ai vari livelli della ricorsione.
+Il fattore $L$ ha un numero di coefficienti non nulli molto minore rispetto all'ordinamento naturale.
+
+\subsection{Grafico della soluzione}
+Nel notebook è riportato il grafico della soluzione con $N=256$.
+I bordi sono costretti a $T=0$, ma come atteso la temperatura sale vicino alla sorgente di calore localizzata intorno all'origine.
+
+\subsection{Analisi dei tempi}
+Con le funzioni $\texttt{ImportaMatrice}$, $\texttt{ImportaRhs}$, $\texttt{CalcolaCholesky}$, $\texttt{RisolviSistema}$ del modulo "soluzione", risolvo il sistema lineare al variare di $N$ tra 32 e 1024, e al variare dell'ordinamento (naturale e riordinato), con un ciclo for.
+Il caso di $N=1024$ con ordinamento naturale ha richiesto troppo tempo e non è stato completato.
+
+Misuro il tempo necessario a svolgere la fattorizzazione di Cholesky.
+In un grafico bilogaritmico di $t$ vs $N$, si osserva una pendenza di circa 3.2 nel caso naturale, 2.2 (escludendo il primo punto un po' anomalo) nel caso riordinato.
+Non coincide del tutto con le attese, forse non siamo ancora nel limite asintotico?
+
+Misuro poi il tempo necessario per risolvere il sistema lineare.
+Nel caso naturale la pendenza è circa 3 come atteso.
+Nel caso riordinato non dovrebbe essere una legge di potenza ma comunque la pendenza è approssimativamente 2.4, intermedia tra 2 e 3 come atteso.
+
+Il tempo necessario a risolvere il sistema dovrebbe essere circa proporzionale al numero di coefficienti non nulli in $L$, e in effetti dal grafico di $nnz(L)$ vs $N$ si trovano circa le stesse pendenze. 
 
 \end{document}
