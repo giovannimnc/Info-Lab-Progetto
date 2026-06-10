@@ -22,7 +22,7 @@
 \maketitle
 
 \section{Introduzione}
-Questo documento tiene traccia dello sviluppo del progetto finale per il corso di Informatica con Laboratorio 2025/26, riguardante la soluzione dell'equazione del calore 2D. 
+Questo documento tiene traccia dello sviluppo del progetto per il corso di Informatica con Laboratorio 2025/26, riguardante la soluzione dell'equazione del calore sul quadrato $[0,1]^2$.
 
 \section{Struttura del progetto}
 I task richiesti nel progetto vengono eseguiti con codici C++ (reperibili nella cartella "codice\_cpp" o Python (nella cartella "codice\_python").
@@ -73,9 +73,9 @@ Complessità totale: $O(N^2)$.
 
 
 \section{Riordinamento dei nodi}
-Input: grafo definito sopra.
+Input: nodi definiti sopra.
 
-Output: nodi del grafo riordinati.
+Output: nodi riordinati con nested dissection.
 
 File coinvolti: codice $\texttt{riordinamento.cpp}$ che prende il file $\texttt{coords.txt}$ generato nel modulo precedente, e genera un file $\texttt{ordering.txt}$ che rappresenta la permutazione dei nodi.
 
@@ -90,7 +90,7 @@ Funzioni:
 \item $\texttt{GeneraVettoreNodi}$. Prende in input $N$ e un vettore vuoto definito nel main.
 Scorre sul file $\texttt{coordsN.txt}$ e legge gli indici $n,i,j,x,y$ dei nodi, riempiendo il vettore con i nodi.
 In pratica inverte quanto fatto nella funzione $\texttt{EsportaPuntiInterni}$ del modulo di discretizzazione.
-Complessità: $O(N^2)$ che è il numero di nodi.
+Complessità: $O(N^2)$, che è il numero di nodi.
 
 \item $\texttt{GeneraGriglia}$.
 Svolge un doppio ciclo for che assegna indice progressivo $n$ agli elementi $(i,j)$ della matrice $\texttt{griglia}$.
@@ -117,14 +117,15 @@ In più prende in input la griglia definita dalla funzione $\texttt{GeneraGrigli
 
 Svolge la stessa ricorsione della funzione precedente, ma evita di scorrere sul vettore dei nodi per decidere quali appartengono a $V_1$, $V_2$, $V_S$, dato che in effetti possiamo capire a priori come dividere i nodi, usando gli indici.
 Perciò esegue subito le due chiamate ricorsive sugli insiemi $V_1$ e $V_2$, che adesso non vengono salvati ma sono identificati solo dagli indici che li delimitano.
-Infine aggiunge il separatore $V_S$ (anch'esso non salvato) in fondo al vettore dei nodi riordinati.
+Infine aggiunge $V_S$ (anch'esso non salvato) in fondo al vettore dei nodi riordinati.
 
-Complessità: $O(N^2)$. All'interno di ogni chiamata della ricorsione, se il numero di nodi coinvolti è $n$, si scorre su $V_s$ che ha lunghezza $O(\sqrt{n})$. Si parte da $n = N^2$ e a ogni passo si dividono i nodi circa in 2 parti uguali a cui applicare di nuovo l'algoritmo, quindi il tempo necessario è dell'ordine di:
-$$\sum_{k=0} ^{\log_2 n} 2^k \sqrt{\frac{n}{2^k}} = \sqrt{n} \sum_{k=0} ^{\log_2 n} 2^{k/2} = \sqrt{n} \frac{2^{(\log_2 n +1)/2} - 1}{2^{1/2} - 1} = O(\sqrt{n} \cdot 2^{(\log_2 n +1)/2}) = O(n) = O(N^2) .$$
+Complessità: $O(N^2)$. All'interno di ogni chiamata della ricorsione, se il numero di nodi coinvolti è $n$, si scorre su $V_s$ che ha lunghezza $O(\sqrt{n})$. Si parte da $n_0 = N^2$ e ad ogni passo si dividono i nodi circa in due parti uguali a cui si applica di nuovo l'algoritmo, quindi il tempo necessario è dell'ordine di:
+$$\sum_{k=0} ^{\log_2 n_0} 2^k \sqrt{\frac{n_0}{2^k}} = \sqrt{n_0} \sum_{k=0} ^{\log_2 n_0} 2^{k/2} = \sqrt{n_0} \frac{2^{(\log_2 n_0 +1)/2} - 1}{2^{1/2} - 1} = O(\sqrt{n_0} \cdot 2^{(\log_2 n_0 +1)/2}) = O(n_0).$$
 
 \item $\texttt{EsportaOrdinamento}$.
-Crea il file $\texttt{ordering.txt}$ e scorre sul vettore dei nodi riordinati, generato da una delle due funzioni sopra.
-Per ciascun nodo, scrive in una riga del file la posizione $m$ nel nuovo ordine e l'indice progressivo iniziale $n$ contenuto nella struct.
+Crea il file $\texttt{ordering.txt}$.
+Scorre sul vettore dei nodi riordinati, generato da una delle due funzioni sopra.
+Per ciascun nodo, scrive in una riga del file la posizione $m$ nel nuovo ordine e l'indice progressivo naturale $n$ contenuto nella struct.
 Complessità: $O(N^2)$, che è la lunghezza del vettore.
 \end{itemize}
 
@@ -134,7 +135,7 @@ Complessità totale: $O(N^2 \log N)$ se si usa il riordinamento lento, $O(N^2)$ 
 \section{Approssimazione dell'equazione differenziale con sistema lineare}
 Input: dominio dell'equazione differenziale discretizzato (ordinato nei due modi), coefficiente $\kappa$, funzione sorgente, condizione al bordo.
 
-Output: matrice e termine noto del sistema lineare che rappresenta l'equazione.
+Output: matrice e termine noto del sistema lineare che approssima l'equazione.
 
 File coinvolti: codice $\texttt{approx\_lineare.cpp}$ che prende i file $\texttt{coords.txt}$ (generato nel modulo "discretizzazione") e $\texttt{ordering.txt}$ (generato nel modulo "riordinamento") e  genera un file $\texttt{A.txt}$ che rappresenta la matrice del sistema lineare, e un file $\texttt{rhs.txt}$ che rappresenta il termine noto.
 
@@ -152,7 +153,7 @@ Lo faccio scorrendo in senso orario sul bordo, partendo dall'origine.
 Assegno ai punti del bordo indici negativi per poter distinguere facilmente punti di bordo e non.
 Scrivo gli indici assegnati ai punti del bordo nelle corrispondenti entrate di una matrice $(N+2) \times (N+2)$.
 
-Se nella funzione successiva $\texttt{GeneraEsportaMatriceRhs}$ si vuole prendere in input una condizione al bordo, essa dovrà essere un vettore $v$ di $4N+4$ numeri reali, ordinati nel modo descritto sopra, in modo che $u_0(x_i,y_j) = v[-p(i,j) - 1]$.
+Se nella funzione $\texttt{GeneraEsportaMatriceRhs}$ (definita sotto) si vuole prendere in input una condizione al bordo, essa dovrà essere un vettore $v$ di $4N+4$ numeri reali, ordinati in modo che $u_0(x_i,y_j) = v[-p(i,j) - 1]$.
 
 Complessità: $O(N)$, che è la lunghezza del bordo.
 
@@ -176,7 +177,7 @@ Prende in input:
 \begin{enumerate}
 \item $N$.
 \item Una stringa "nat" o "ord" che decide il tipo di ordinamento (per dare il nome giusto ai file).
-\item La matrice e il vettore generati dalle funzioni sopra (devono essere quelli relativi all'ordinamento scelto).
+\item La mappe (matrice e vettore) generate dalle funzioni sopra (devono essere quelle relative all'ordinamento scelto).
 \item La funzione che fa da sorgente di calore, che sarà definita nel main come funzione lambda.
 Per darla come parametro, serve includere $\texttt{functional}$.
 \item La diffusività $\kappa$, che di default è $0.01$.
@@ -193,7 +194,7 @@ Calcola il valore $f(x_i,y_j)$ e lo salva in una variabile $b$, che sarà il coe
 Dall'equazione scritta nel testo si vede che solo 5 coefficienti ($(i+1,j)$ etc) sono coinvolti nella riga $(i,j)$ del sistema.
 Usando una delle mappe definite sopra, associa a quelli che non sono di bordo (cioè hanno immagine non negativa tramite la mappa; sono almeno 3 e al massimo 5) un indice $m$.
 Calcola il valore di $A_{l,m}$ e scrive sul file $\texttt{A.txt}$ la riga $l,m,A_{l,m}$.
-Il formato è COO, cioè sto salvando indici e valore solo dei coefficienti non nulli.
+Il formato è COO, cioè sto salvando indici e valore dei coefficienti non nulli.
 
 Per gli eventuali indici di bordo, usa l'indice $m$ calcolato con la mappa per prendere il valore $u_0(x,y)$ assegnato, e lo somma alla variabile $b$ (con opportuno segno e coefficiente).
 Infine scrive sul file $\texttt{rhs.txt}$ il valore di $b$.
@@ -257,7 +258,7 @@ Complessità: $O(N^2)$, che è il numero di coefficienti di $b$.
 Prende in input $L$ triangolare inferiore, e $b$ array.
 Risolve prima il sistema triangolare inferiore $Ly = -b$, poi quello triangolare superiore $L^T u= y$, con la funzione $\texttt{scipy.sparse.linalg.spsolve\_triangular}$.
 L'output è il vettore $u$, nell'ordine scelto.
-Complessità: $O(nnz(L))$, perché i due sistemi sono triangolari. $nnz(L) = O(N^3)$ per l'ordinamento naturale, $O(N^2 \log N)$ per il riordinamento.
+Complessità: $O(nnz(L))$, perché i due sistemi sono triangolari. $nnz(L) = O(N^3)$ per l'ordinamento naturale (in questo caso $A$ è a banda con larghezza $N$, la fattorizzazione dovrebbe conservare la banda ma potenzialmente la riempie tutta), $O(N^2 \log N)$ per il riordinamento.
 
 
 \item $\texttt{GeneraMappaNaturale}$.
@@ -303,13 +304,14 @@ Con le funzioni $\texttt{ImportaMatrice}$, $\texttt{ImportaRhs}$, $\texttt{Calco
 Il caso di $N=1024$ con ordinamento naturale ha richiesto troppo tempo e non è stato completato.
 
 Misuro il tempo necessario a svolgere la fattorizzazione di Cholesky.
-In un grafico bilogaritmico di $t$ vs $N$, si osserva una pendenza di circa 3.2 nel caso naturale, 2.2 (escludendo il primo punto un po' anomalo) nel caso riordinato.
-Non coincide del tutto con le attese, forse non siamo ancora nel limite asintotico?
+In un grafico bilogaritmico di $t$ in funzione di $N$, si osserva una pendenza di circa 3.2 nel caso naturale, 2.2 (escludendo il primo punto un po' anomalo) nel caso riordinato.
+Non coincide del tutto con le attese $O(N^4)$ e $O(N^3)$.
+Forse non siamo ancora nel limite asintotico, oppure la funzione usata riesce a ottimizzare il calcolo.
 
 Misuro poi il tempo necessario per risolvere il sistema lineare.
 Nel caso naturale la pendenza è circa 3 come atteso.
 Nel caso riordinato non dovrebbe essere una legge di potenza ma comunque la pendenza è approssimativamente 2.4, intermedia tra 2 e 3 come atteso.
 
-Il tempo necessario a risolvere il sistema dovrebbe essere circa proporzionale al numero di coefficienti non nulli in $L$, e in effetti dal grafico di $nnz(L)$ vs $N$ si trovano circa le stesse pendenze. 
+Il tempo necessario a risolvere il sistema dovrebbe essere circa proporzionale al numero di coefficienti non nulli in $L$, e in effetti dal grafico di $nnz(L)$ in funzione di $N$ si trovano circa le stesse pendenze. 
 
 \end{document}

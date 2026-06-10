@@ -84,7 +84,7 @@ void GeneraNuovoOrdinamento(const vector<nodo>& nodi,           // O(N^2 logN)
     }
 }
 
-void GeneraNuovoOrdinamentoVeloce(const vector<vector<int>>& griglia,
+void GeneraNuovoOrdinamentoVeloce(const vector<vector<int>>& griglia,       // O(N^2)
     const vector<nodo>& nodi,
     vector<nodo>& nodi_ordinati,
     const int i_min, const int i_max, const int j_min, const int j_max) {
@@ -92,7 +92,7 @@ void GeneraNuovoOrdinamentoVeloce(const vector<vector<int>>& griglia,
     const int N1 = i_max - i_min + 1;       // dimensioni del rettangolo che sto considerando
     const int N2 = j_max - j_min + 1;
 
-    if (N1 <= 0 || N2 <= 0) {               // caso base: rettangolo non divisibile
+    if (N1 <= 0 || N2 <= 0) {               // caso base: rettangolo vuoto (almeno un lato nullo)
         return;
     }
     

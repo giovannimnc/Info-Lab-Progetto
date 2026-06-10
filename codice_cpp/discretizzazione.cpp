@@ -70,8 +70,6 @@ void GeneraEsportaGrafo(const int N, const vector<vector<int>>& griglia) {
     file_out.close();
 }
 
-
-
 int main() {
     int N;
     cout << "Inserire N: ";
