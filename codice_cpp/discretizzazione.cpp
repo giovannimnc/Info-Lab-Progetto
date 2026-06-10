@@ -28,7 +28,6 @@ void GeneraGriglia(const int N, vector<nodo>& nodi, vector<vector<int>>& griglia
             griglia[i][j] = ind_progr;
 
             ind_progr++;
-
         }
     }
 }
@@ -44,7 +43,7 @@ void EsportaPuntiInterni(const int N, const vector<nodo>& nodi) {
     file_out.close();
 }
 
-void GeneraEsportaGrafo(const int N, const vector<vector<int>>& griglia, vector<vector<int>>& lista_adiacenza) {
+void GeneraEsportaGrafo(const int N, const vector<vector<int>>& griglia) {
     const string nome_file = "../dati/connectivity" + to_string(N) + ".txt";    
     ofstream file_out(nome_file);
 
@@ -56,18 +55,12 @@ void GeneraEsportaGrafo(const int N, const vector<vector<int>>& griglia, vector<
             const auto b = griglia[i+1][j];   // vicino a destra
             const auto c = griglia[i][j+1];   // vicino in alto
 
-            if (b != -1) {          // se il nodo (i+1,j) non è di bordo, aggiungo alla lista di adiacenza e scrivo l'arco su file
-                lista_adiacenza[a].push_back(b);
-                lista_adiacenza[b].push_back(a);
-
+            if (b != -1) {          // se il nodo (i+1,j) non è di bordo, scrivo l'arco su file
                 file_out << e << " " << a << " " << b << "\n";
                 e++;
             }
 
             if (c != -1) {
-                lista_adiacenza[a].push_back(c);
-                lista_adiacenza[c].push_back(a);
-
                 file_out << e << " " << a << " " << c << "\n";
                 e++;
             }
@@ -80,18 +73,17 @@ void GeneraEsportaGrafo(const int N, const vector<vector<int>>& griglia, vector<
 
 
 int main() {
-    const int N = 4;
+    int N;
+    cout << "Inserire N: ";
+    cin >> N;
 
     vector<nodo> nodi;
     nodi.reserve(N * N);        // ottimizza il push_back
     vector<vector<int>> griglia(N + 2, vector<int>(N + 2, -1));
-    vector<vector<int>> lista_adiacenza(N * N);
 
     GeneraGriglia(N, nodi, griglia);
     EsportaPuntiInterni(N, nodi);
-    GeneraEsportaGrafo(N, griglia, lista_adiacenza);
-
-    cout <<"ok"<<endl;
+    GeneraEsportaGrafo(N, griglia);
 
     return 0;
 }

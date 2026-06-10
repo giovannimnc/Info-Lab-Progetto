@@ -24,7 +24,22 @@ void GeneraVettoreNodi(const int N, vector<nodo>& nodi) {
     file_in.close();
 }
 
-void GeneraNuovoOrdinamento(const vector<nodo>& nodi, vector<nodo>& nodi_ordinati, const int i_min, const int i_max, const int j_min, const int j_max) {
+void GeneraGriglia(const int N, vector<vector<int>>& griglia) {
+    size_t ind_progr = 0;                   // indice n che numera i nodi
+
+    for (int i = 1; i<=N; i++) {            // ciclo solo sui nodi interni
+        for (int j = 1; j<=N; j++) {
+            griglia[i][j] = ind_progr;
+
+            ind_progr++;
+        }
+    }
+}
+
+void GeneraNuovoOrdinamento(const vector<nodo>& nodi,           // O(N^2 logN)
+    vector<nodo>& nodi_ordinati,
+    const int i_min, const int i_max, const int j_min, const int j_max) {
+
     const int N1 = i_max - i_min + 1;       // dimensioni del rettangolo che sto considerando
     const int N2 = j_max - j_min + 1;
 
@@ -64,8 +79,45 @@ void GeneraNuovoOrdinamento(const vector<nodo>& nodi, vector<nodo>& nodi_ordinat
         GeneraNuovoOrdinamento(V2, nodi_ordinati, i_min, i_max, j_hat + 1, j_max);
     }
 
-    for (const auto& m : VS) {
+    for (const auto& m : VS) {              // aggiungo il separatore in fondo
         nodi_ordinati.push_back(m);
+    }
+}
+
+void GeneraNuovoOrdinamentoVeloce(const vector<vector<int>>& griglia,
+    const vector<nodo>& nodi,
+    vector<nodo>& nodi_ordinati,
+    const int i_min, const int i_max, const int j_min, const int j_max) {
+
+    const int N1 = i_max - i_min + 1;       // dimensioni del rettangolo che sto considerando
+    const int N2 = j_max - j_min + 1;
+
+    if (N1 <= 0 || N2 <= 0) {               // caso base: rettangolo non divisibile
+        return;
+    }
+    
+    if (N1 >= N2) {
+        const int i_hat = i_min + N1 / 2;       // taglio verticale
+
+        GeneraNuovoOrdinamentoVeloce(griglia, nodi, nodi_ordinati, i_min, i_hat - 1, j_min, j_max);      // passo ricorsivo
+        GeneraNuovoOrdinamentoVeloce(griglia, nodi, nodi_ordinati, i_hat + 1, i_max, j_min, j_max);
+
+        for (int j = j_min; j<= j_max; j++) {           // aggiungo VS in fondo
+            int n = griglia[i_hat][j];
+            nodi_ordinati.push_back(nodi[n]);
+        }
+    }
+
+    else {
+        const int j_hat = j_min + N2 / 2;       // taglio orizzontale
+
+        GeneraNuovoOrdinamentoVeloce(griglia, nodi, nodi_ordinati, i_min, i_max, j_min, j_hat - 1);
+        GeneraNuovoOrdinamentoVeloce(griglia, nodi, nodi_ordinati, i_min, i_max, j_hat + 1, j_max);
+
+        for (int i = i_min; i<= i_max; i++) {           // aggiungo VS in fondo
+            int n = griglia[i][j_hat];
+            nodi_ordinati.push_back(nodi[n]);
+        }
     }
 }
 
@@ -81,18 +133,21 @@ void EsportaOrdinamento(const int N, const vector<nodo>& nodi_ordinati) {
 }
 
 int main() {
-    const int N = 1024;
+    int N;
+    cout << "Inserire N: ";
+    cin >> N;
 
     vector<nodo> nodi;
     nodi.reserve(N * N);
     vector<nodo> nodi_ordinati;
     nodi_ordinati.reserve(N * N);
+    vector<vector<int>> griglia(N + 2, vector<int>(N + 2, -1));
 
     GeneraVettoreNodi(N, nodi);
-    GeneraNuovoOrdinamento(nodi, nodi_ordinati, 1, N, 1, N);
+    GeneraGriglia(N, griglia);
+    // GeneraNuovoOrdinamento(nodi, nodi_ordinati, 1, N, 1, N);
+    GeneraNuovoOrdinamentoVeloce(griglia, nodi, nodi_ordinati, 1, N, 1, N);
     EsportaOrdinamento(N, nodi_ordinati);
-
-    cout << "ok" << endl;
 
     return 0;
 }

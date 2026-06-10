@@ -117,7 +117,7 @@ void GeneraEsportaMatriceRhs(const int N,
 int main() {
     const int N = 4;
 
-    auto sorgente = [](double x, double y) {
+    auto sorgente = [](double x, double y) {        // sorgente di calore
         return exp(-10.0 * (x * x + y * y));
     };
 
@@ -134,8 +134,6 @@ int main() {
 
     GeneraEsportaMatriceRhs(N, "nat", mappa_nat, mappa_nat_inv, sorgente);    
     GeneraEsportaMatriceRhs(N, "ord", mappa_ord, mappa_ord_inv, sorgente);
-
-    cout << "ok"<<endl;
 
     return 0;
 }

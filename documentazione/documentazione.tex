@@ -43,7 +43,7 @@ Strutture dati necessarie:
 \begin{itemize}
 \item $\texttt{struct}$ per i nodi, per memorizzare indice progressivo $n$, indici della griglia $i,j$, coordinate spaziali $x,y$.
 \item $\texttt{vector}$ per contenere la sequenza dei nodi interni, ordinati secondo l'indice $n$, per poi esportarli su $\texttt{coords.txt}$.
-\item $\texttt{vector}$ di $\texttt{vector}$ per la lista di adiacenza del grafo (lista e non matrice perché il grafo è sparso); e anche per costruire una matrice $\texttt{griglia}$ che associ alle coordinate spaziali di ciascun nodo interno il relativo indice progressivo, e associ -1 ai nodi di bordo.
+\item $\texttt{vector}$ di $\texttt{vector}$ per la matrice $\texttt{griglia}$ che associa alle coordinate spaziali di ciascun nodo interno il relativo indice progressivo, e associa -1 ai nodi di bordo.
 \end{itemize}
 
 Funzioni:
@@ -64,8 +64,7 @@ Crea il file $\texttt{connectivityN.txt}$.
 Svolge un doppio ciclo for, sugli indici dei nodi interni.
 Ad ogni iterazione, usa la matrice $\texttt{griglia}$ per verificare se i 2 vicini a destra e in alto del nodo corrente sono di bordo o no (se un nodo è di bordo, il valore assegnatogli nella matrice è rimasto -1, cioè non è stato sovrascritto con l'indice progressivo).
 Controlla solo i vicini a destra e in alto, perché se controllassi tutti e 4 conterei due volte gli archi.
-Se il vicino non è di bordo, aggiunge alla lista di adiacenza (vector di $N^2$ vector, inizializzato nel main) i due nodi coinvolti.
-Poi scrive in una riga del file l'indice progressivo $e$ dell'arco (cioè quanti archi ho creato fino a questo) e gli indici progressivi dei due nodi.
+Se il vicino non è di bordo, scrive in una riga del file l'indice progressivo $e$ dell'arco (cioè quanti archi ho creato fino a questo) e gli indici progressivi dei due nodi.
 Complessità: $O(N^2)$, a causa del doppio ciclo for.
 
 \end{itemize}
@@ -93,8 +92,16 @@ Scorre sul file $\texttt{coordsN.txt}$ e legge gli indici $n,i,j,x,y$ dei nodi, 
 In pratica inverte quanto fatto nella funzione $\texttt{EsportaPuntiInterni}$ del modulo di discretizzazione.
 Complessità: $O(N^2)$ che è il numero di nodi.
 
+\item $\texttt{GeneraGriglia}$.
+Svolge un doppio ciclo for che assegna indice progressivo $n$ agli elementi $(i,j)$ della matrice $\texttt{griglia}$.
+La matrice è inizializzata nel $\texttt{main}$ con valori $-1$.
+Complessità: $O(N^2)$, a causa del doppio ciclo for.
+
+Questa funzione è analoga alla funzione omonima del modulo precdente. In questo modulo viene usata dalla funzione $\texttt{GeneraNuovoOrdinamentoVeloce}$.
+
 \item $\texttt{GeneraNuovoOrdinamento}$.
-Prende in input il vettore dei nodi riempito dalla funzione precedente, un vettore vuoto che conterrà i nodi riordinati, e gli indici $i,j$ massimo e minimo dei nodi contenuti nel rettangolo da riordinare (quando la chiamo dal main, sarà $i_{min} = j_{min} = 1$, $i_{max} = j_{max} = N$, cioè tutta la griglia dei nodi interni).
+Prende in input il vettore dei nodi riempito dalla funzione $\texttt{GeneraVettoreNodi}$, un vettore vuoto che conterrà i nodi riordinati, e gli indici $i,j$ massimo e minimo dei nodi contenuti nel rettangolo da riordinare (quando la chiamo dal main, sarà $i_{min} = j_{min} = 1$, $i_{max} = j_{max} = N$, cioè tutta la griglia dei nodi interni).
+
 Calcola le dimensioni $N_1, N_2$ del rettangolo da dividere in tre.
 Il caso base della ricorsione è quando il rettangolo non è divisibile ulteriormente, cioè contiene un solo nodo (oppure non è nemmeno definito perché $i_{min} >i_{max}$, può succedere).
 Se si supera il caso base, si divide il rettangolo verticalmente o orizzontalmente, in base a quale lato del rettangolo è maggiore.
@@ -104,17 +111,28 @@ Infine aggiunge il vettore $V_S$ in fondo al vettore dei nodi riordinati; gli al
 
 Complessità: $O(N^2 \log N )$, perché ad ogni passo della ricorsione devo scorrere sul vettore dei nodi corrente, che ha lunghezza $O(N^2)$, e ad ogni passo della ricorsione divido per 2 (circa) il lato del rettangolo considerato, quindi il numero di passi è $O(\log N)$.
 
+\item $\texttt{GeneraNuovoOrdinamentoVeloce}$.
+Come la versione precedente prende in input il vettore dei nodi riempito dalla funzione $\texttt{GeneraVettoreNodi}$, un vettore vuoto che conterrà i nodi riordinati, e gli indici $i,j$ massimo e minimo dei nodi contenuti nel rettangolo da riordinare.
+In più prende in input la griglia definita dalla funzione $\texttt{GeneraGriglia}$.
+
+Svolge la stessa ricorsione della funzione precedente, ma evita di scorrere sul vettore dei nodi per decidere quali appartengono a $V_1$, $V_2$, $V_S$, dato che in effetti possiamo capire a priori come dividere i nodi, usando gli indici.
+Perciò esegue subito le due chiamate ricorsive sugli insiemi $V_1$ e $V_2$, che adesso non vengono salvati ma sono identificati solo dagli indici che li delimitano.
+Infine aggiunge il separatore $V_S$ (anch'esso non salvato) in fondo al vettore dei nodi riordinati.
+
+Complessità: $O(N^2)$. All'interno di ogni chiamata della ricorsione, se il numero di nodi coinvolti è $n$, si scorre su $V_s$ che ha lunghezza $O(\sqrt{n})$. Si parte da $n = N^2$ e a ogni passo si dividono i nodi circa in 2 parti uguali a cui applicare di nuovo l'algoritmo, quindi il tempo necessario è dell'ordine di:
+$$\sum_{k=0} ^{\log_2 n} 2^k \sqrt{\frac{n}{2^k}} = \sqrt{n} \sum_{k=0} ^{\log_2 n} 2^{k/2} = \sqrt{n} \frac{2^{(\log_2 n +1)/2} - 1}{2^{1/2} - 1} = O(\sqrt{n} \cdot 2^{(\log_2 n +1)/2}) = O(n) = O(N^2) .$$
+
 \item $\texttt{EsportaOrdinamento}$.
-Crea il file $\texttt{ordering.txt}$ e scorre sul vettore dei nodi riordinati, generato dalla funzione sopra.
+Crea il file $\texttt{ordering.txt}$ e scorre sul vettore dei nodi riordinati, generato da una delle due funzioni sopra.
 Per ciascun nodo, scrive in una riga del file la posizione $m$ nel nuovo ordine e l'indice progressivo iniziale $n$ contenuto nella struct.
 Complessità: $O(N^2)$, che è la lunghezza del vettore.
 \end{itemize}
 
-Complessità totale: $O(N^2 \log N)$.
+Complessità totale: $O(N^2 \log N)$ se si usa il riordinamento lento, $O(N^2)$ con quello veloce.
 
 
 \section{Approssimazione dell'equazione differenziale con sistema lineare}
-Input: dominio dell'equazione differenziale discretizzato (ordinato nei due modi), coefficienti, funzione sorgente, condizione al bordo.
+Input: dominio dell'equazione differenziale discretizzato (ordinato nei due modi), coefficiente $\kappa$, funzione sorgente, condizione al bordo.
 
 Output: matrice e termine noto del sistema lineare che rappresenta l'equazione.
 
@@ -132,13 +150,15 @@ Funzioni:
 Per accettare in input una condizione al bordo non identicamente nulla, assegno a ogni punto del bordo della griglia un indice progressivo tra $-1$ e $-4N-4$, cioè creo una funzione biunivoca $p(i,j)$ tra gli indici $(i,j)$ di bordo e gli interi $\{-1, \dots, -4N-4\}$.
 Lo faccio scorrendo in senso orario sul bordo, partendo dall'origine.
 Assegno ai punti del bordo indici negativi per poter distinguere facilmente punti di bordo e non.
+Scrivo gli indici assegnati ai punti del bordo nelle corrispondenti entrate di una matrice $(N+2) \times (N+2)$.
+
 Se nella funzione successiva $\texttt{GeneraEsportaMatriceRhs}$ si vuole prendere in input una condizione al bordo, essa dovrà essere un vettore $v$ di $4N+4$ numeri reali, ordinati nel modo descritto sopra, in modo che $u_0(x_i,y_j) = v[-p(i,j) - 1]$.
 
 Complessità: $O(N)$, che è la lunghezza del bordo.
 
 \item $\texttt{GeneraMappaNaturale}$.
 Genera una mappa da $(i,j)$ a $n$ (ordine naturale), e la sua inversa.
-Legge il file $\texttt{coords.txt}$ e scrive su una matrice $(N+2)\times (N+2)$ (la stessa usata per i punti di bordo) l'indice progressivo $n$ associato a ogni valore di $(i,j)$ interno.
+Legge il file $\texttt{coords.txt}$ e scrive su una matrice $(N+2)\times (N+2)$ (che sarà la stessa usata per i punti di bordo) l'indice progressivo $n$ associato a ogni valore di $(i,j)$ interno.
 Inoltre riempie un vettore che fa l'inverso, cioè associa la coppia $(i,j)$ a $n$ (solo per i punti interni).
 Infine chiama la funzione $\texttt{GeneraIndiciBordo}$ per associare i valori da $-1$ a $-4N-4$ ai punti di bordo.
 
@@ -157,7 +177,7 @@ Prende in input:
 \item $N$.
 \item Una stringa "nat" o "ord" che decide il tipo di ordinamento (per dare il nome giusto ai file).
 \item La matrice e il vettore generati dalle funzioni sopra (devono essere quelli relativi all'ordinamento scelto).
-\item La funzione che fa da sorgente di calore, definita nel main come funzione lambda.
+\item La funzione che fa da sorgente di calore, che sarà definita nel main come funzione lambda.
 Per darla come parametro, serve includere $\texttt{functional}$.
 \item La diffusività $\kappa$, che di default è $0.01$.
 \item Un vettore di $4N+4$ componenti che contiene le condizioni al bordo $u_0(x,y)$.
@@ -187,10 +207,9 @@ Complessità totale: $O(N^2)$.
 \section{Fattorizzazione di Cholesky}
 Input: matrice $A$ del sistema lineare.
 
-Output: matrice $L$ tale che $A = -LL^T$. Immagini della struttura di $A,L$ (entrate non nulle).
+Output: matrice $L$ tale che $A = -LL^T$.
 
-File coinvolti: notebook $\texttt{soluzione\_sistema.ipynb}$ che legge $\texttt{A.txt}$ generato nel modulo precedente ed esegue la fattorizzazione.
-Struttura della matrice (entrate non nulle).
+File coinvolti: notebook $\texttt{soluzione\_sistema.ipynb}$ che legge $\texttt{A.txt}$ generato nel modulo precedente.
 
 Strutture dati:
 \begin{itemize}
@@ -202,12 +221,15 @@ Funzioni:
 \begin{itemize}
 \item $\texttt{ImportaMatriceCSC}$.
 Prende in input $N$ e una stringa "ord" o "nat" per scegliere il file.
-Legge $\texttt{A.txt}$ in formato COO, scarica le tre colonne come array (con $\texttt{np.loadtxt}$), e converte in CSC (con $\texttt{scipy.sparse.csc\_matrix}$).
+Legge $\texttt{A.txt}$ in formato COO.
+Con $\texttt{np.loadtxt}$ scarica le tre colonne del file come tre array che contengono indici di riga, indici di colonna e coefficienti, e converte in CSC (con $\texttt{scipy.sparse.csc\_matrix}$).
 Restituisce la matrice $A$ in CSC.
-Complessità: $O(N^2)$, che è il numero di entrate non nulle in $A$.
+
+Complessità: $O(N^2)$, che è il numero di entrate non nulle in $A$. Anche la conversione in CSC eseguita da SciPy dovrebbe richiedere $O(N^2)$.
 
 \item $\texttt{CalcolaCholesky}$.
-Prende in input una matrice $A$ (definita negativa) e calcola $L$ (tale che $LL^T = -A)$ con la funzione fornita nel testo.
+Prende in input una matrice $A$ (definita positiva; nel nostro caso sarà $-A$) e calcola $L$ tale che $LL^T = A$ con la funzione fornita nel testo.
+Non sono sicuro della complessità della funzione usata.
 
 \end{itemize}
 
@@ -243,7 +265,7 @@ Legge il file $\texttt{coords.txt}$ e genera un array che in posizione $n$ (indi
 
 \item $\texttt{GeneraMappaOrdinata}$.
 Legge il file $\texttt{ordering.txt}$ e genera un array che in posizione $m$ (indice progressivo dopo il riordinamento) contiene la coppia $(i,j)$ associata.
-Per convertire da $m$ a $(i,j)$ passo attraverso $n$, usando la funzione precedente.
+Per convertire da $m$ a $(i,j)$, passo attraverso $n$, usando la funzione precedente.
 Uso il modo nativo di NumPy per permutare gli elementi ("fancy indexing"): valuto l'array "mappa naturale" sull'intero array di conversione tra gli ordinamenti $m$ e $n$.
 Il risultato è l'array voluto che mappa $m$ in $(i,j)$.
 Complessità: $O(N^2)$, perché scaricare dal file, chiamare la funzione precedente e permutare i coefficienti richiedono tutti $O(N^2)$.
